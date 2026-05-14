@@ -1,0 +1,204 @@
+AWSTemplateFormatVersion: "2010-09-09" # テンプレのフォーマットのバージョンを指定する、決まり文句
+Description: "aws study lesson27" # テンプレの目的や内容について記述する、AWSTemplateFormatVersionの直後に書く必要あり
+
+
+Parameters: # テンプレに対して外部から入力する
+  MyIP:
+    Type: String
+    NoEcho: true # 入力内容が画面上で「***」になる
+    Description: "My Global IP Address"
+
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName # プルダウンで選択可能
+    Description: "Select an existing EC2 KeyPair"
+
+
+Resources: # リソースの詳細を記載する
+  
+  # VPCを作成
+  VPC: # 論理ID、識別子、他のセクションから参照する際に使う
+    Type: AWS::EC2::VPC # 使用するサービスの指定、EC2を記述するのは昔の名残
+    Properties: # サービスごとの具体的な設定項目
+      CidrBlock: 10.0.0.0/16 # このVPCで使うIPアドレスの範囲
+      EnableDnsHostnames: true # EC2にパブリックのドメインを与える
+      EnableDnsSupport: true # ドメインをIPに変換してくれる
+      Tags: # 管理しやすくするためのタグ
+        - Key: Name # Nameは名前を表示する
+          Value: aws-study-vpc # 管理画面で表示される名前
+
+  # --- サブネットを作成 ---
+  # 1a
+  SubnetPublicA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1a # AZを指定
+      VpcId: !Ref VPC # !Refで紐づけるVPCを指定
+      CidrBlock: 10.0.1.0/24 # 識別しやすいように10.0.1.0から始める？
+      Tags:
+        - Key: Name
+          Value: aws-study-subnet-public-a
+
+  SubnetPrivateA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1a 
+      VpcId: !Ref VPC 
+      CidrBlock: 10.0.2.0/24
+      Tags:
+        - Key: Name
+          Value: aws-study-subnet-private-a
+  
+  # 1c
+  SubnetPublicC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1c 
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.3.0/24
+      Tags:
+        - Key: Name
+          Value: aws-study-subnet-public-c
+
+  SubnetPrivateC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1c
+      VpcId: !Ref VPC 
+      CidrBlock: 10.0.4.0/24
+      Tags:
+        - Key: Name
+          Value: aws-study-subnet-private-c
+
+  # IGWを作成
+  IGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: aws-study-igw
+
+  # IGWをVPCに紐付け
+  IGWAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref IGW
+
+  # vpcエンドポイントを作成
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      VpcEndpointType: Gateway 
+      RouteTableIds: 
+        - !Ref RtbPrivateA
+        - !Ref RtbPrivateC
+
+
+# ==========================================
+#  Route Table
+# ==========================================
+
+  # --- ルートテーブルを作成 ---
+  # Public
+  RtbPublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: aws-study-rtb-public
+
+  # Private(1a)
+  RtbPrivateA:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: aws-study-rtb-private-a
+
+  # Private(1c)
+  RtbPrivateC:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: aws-study-rtb-private-c
+  
+  # Route(アウトバウンドのルールを追加)
+  RoutePublic:
+    Type: AWS::EC2::Route
+    DependsOn: IGWAttachment # インターネットゲートウェイが取り付け終わるまで待機
+    Properties:
+      RouteTableId: !Ref RtbPublic # どのルートテーブルに書き込むか
+      DestinationCidrBlock: 0.0.0.0/0 # VPCの範囲外のIPの場合は
+      GatewayId: !Ref IGW #このゲートウェイに飛ばす
+
+  # --- サブネットにルートテーブルを紐付け ---
+  #Public(1a)
+  RtbAssociationPublicA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublicA 
+      RouteTableId: !Ref RtbPublic
+
+  #Public(1c)
+  RtbAssociationPublicC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublicC
+      RouteTableId: !Ref RtbPublic
+
+  # Private(1a)
+  RtbAssociationPrivateA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivateA 
+      RouteTableId: !Ref RtbPrivateA
+
+  # Private(1c)
+  RtbAssociationPrivateC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivateC 
+      RouteTableId: !Ref RtbPrivateC
+
+
+# ==========================================
+#  Security Group
+# ==========================================
+
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow SSH from my IP" # セキュリティーグループの説明
+      VpcId: !Ref VPC
+      SecurityGroupIngress: # インバウンドのルール
+        - IpProtocol: tcp
+          FromPort: 22 # SSHのポート番号
+          ToPort: 22
+          CidrIp: !Sub "${MyIP}/32" # 自分のIPアドレスをパラメータから呼び出す
+      Tags:
+        - Key: Name
+          Value: aws-study-ec2-sg
+
+
+# ==========================================
+#  EC2 Instance
+# ==========================================
+
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0e668174d57c64015
+      InstanceType: t3.micro
+      SecurityGroupIds: 
+        - !Ref EC2SecurityGroup
+      SubnetId: !Ref SubnetPublicA # 置く場所
+      KeyName: !Ref KeyName # パラメータから呼び出す
+      Tags:
+        - Key: Name
+          Value: aws-study-ec2
