@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09" # テンプレのフォーマットのバージョンを指定する、決まり文句
 Description: "aws study lesson27" # テンプレの目的や内容について記述する、AWSTemplateFormatVersionの直後に書く必要あり
 
-
 Parameters: # テンプレに対して外部から入力する
   MyIP:
     Type: String
@@ -195,10 +194,13 @@ Resources: # リソースの詳細を記載する
     Properties:
       ImageId: ami-0e668174d57c64015
       InstanceType: t3.micro
-      SecurityGroupIds: 
-        - !Ref EC2SecurityGroup
-      SubnetId: !Ref SubnetPublicA # 置く場所
       KeyName: !Ref KeyName # パラメータから呼び出す
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: !Ref SubnetPublicA
+          GroupSet:
+            - !Ref EC2SecurityGroup
       Tags:
         - Key: Name
           Value: aws-study-ec2
