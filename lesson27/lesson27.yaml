@@ -1,0 +1,419 @@
+AWSTemplateFormatVersion: "2010-09-09" # テンプレのフォーマットのバージョンを指定する、決まり文句
+Description: "aws study lesson27" # テンプレの目的や内容について記述する、AWSTemplateFormatVersionの直後に書く必要あり
+
+Parameters: # テンプレに対して外部から入力する
+  MyIP:
+    Type: String
+    NoEcho: true # 入力内容が画面上で「***」になる
+    Description: "My Global IP Address for SSH"
+
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName # プルダウンで選択可能
+    Description: "Select an existing EC2 KeyPair"
+
+  DBPassword:
+      Type: String
+      NoEcho: true 
+      Description: "RDS master user password"
+  
+  EC2AMI:
+    Type: AWS::EC2::Image::Id
+    Default: "ami-0e668174d57c64015"
+    Description: "AMI ID for the EC2 instance. Note: This default ID is only valid for the ap-northeast-1 (Tokyo) region."
+  
+  EC2InstanceType:
+    Type: String
+    Default: "t3.micro"
+    Description: "EC2 instance type"
+  
+  DBInstanceClass:
+    Type: String
+    Default: "db.t3.micro"
+    Description: "RDS instance class"
+  
+  DBEngineVersion:
+    Type: String
+    Default: "8.0.46"
+    Description: "MySQL engine version"
+
+
+Resources: # リソースの詳細を記載する
+  
+  # ==========================================
+  #  VPC & Subnets
+  # ==========================================
+
+  # VPCを作成
+  VPC: # 論理ID、識別子、他のセクションから参照する際に使う
+    Type: AWS::EC2::VPC # 使用するサービスの指定、EC2を記述するのは昔の名残
+    Properties: # サービスごとの具体的な設定項目
+      CidrBlock: 10.0.0.0/16 # このVPCで使うIPアドレスの範囲
+      EnableDnsHostnames: true # EC2にパブリックのドメインを与える
+      EnableDnsSupport: true # ドメインをIPに変換してくれる
+      Tags: # 管理しやすくするためのタグ
+        - Key: Name # Nameは名前を表示する
+          Value: aws-study-vpc # 管理画面で表示される名前
+
+  # --- サブネットを作成 ---
+  # 1a
+  SubnetPublicA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1a # AZを指定
+      VpcId: !Ref VPC # !Refで紐づけるVPCを指定
+      CidrBlock: 10.0.1.0/24 # 識別しやすいように10.0.1.0から始める
+      MapPublicIpOnLaunch: true # パブリックIPを自動付与
+      Tags:
+        - Key: Name
+          Value: aws-study-subnet-public-a
+
+  SubnetPrivateA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1a 
+      VpcId: !Ref VPC 
+      CidrBlock: 10.0.2.0/24
+      Tags:
+        - Key: Name
+          Value: aws-study-subnet-private-a
+  
+  # 1c
+  SubnetPublicC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1c 
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.3.0/24
+      MapPublicIpOnLaunch: true # パブリックIPを自動付与
+      Tags:
+        - Key: Name
+          Value: aws-study-subnet-public-c
+
+  SubnetPrivateC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-northeast-1c
+      VpcId: !Ref VPC 
+      CidrBlock: 10.0.4.0/24
+      Tags:
+        - Key: Name
+          Value: aws-study-subnet-private-c
+
+
+  # ==========================================
+  #  IGW & VPCEndpoint
+  # ==========================================
+
+  # IGWを作成
+  IGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: aws-study-igw
+
+  # IGWをVPCに紐付け
+  IGWAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref IGW
+
+  # vpcエンドポイントを作成
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref VPC
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      VpcEndpointType: Gateway 
+      RouteTableIds: 
+        - !Ref RtbPrivateA
+        - !Ref RtbPrivateC
+
+
+  # ==========================================
+  #  Route Table
+  # ==========================================
+
+  # --- ルートテーブルを作成 ---
+  # Public
+  RtbPublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: aws-study-rtb-public
+
+  # Private(1a)
+  RtbPrivateA:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: aws-study-rtb-private-a
+
+  # Private(1c)
+  RtbPrivateC:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: aws-study-rtb-private-c
+  
+  # Route(アウトバウンドのルールを追加)
+  RoutePublic:
+    Type: AWS::EC2::Route
+    DependsOn: IGWAttachment # インターネットゲートウェイが取り付け終わるまで待機
+    Properties:
+      RouteTableId: !Ref RtbPublic # どのルートテーブルに書き込むか
+      DestinationCidrBlock: 0.0.0.0/0 # VPCの範囲外のIPの場合は
+      GatewayId: !Ref IGW #このゲートウェイに飛ばす
+
+  # --- サブネットにルートテーブルを紐付け ---
+  #Public(1a)
+  RtbAssociationPublicA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublicA 
+      RouteTableId: !Ref RtbPublic
+
+  #Public(1c)
+  RtbAssociationPublicC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublicC
+      RouteTableId: !Ref RtbPublic
+
+  # Private(1a)
+  RtbAssociationPrivateA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivateA 
+      RouteTableId: !Ref RtbPrivateA
+
+  # Private(1c)
+  RtbAssociationPrivateC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPrivateC 
+      RouteTableId: !Ref RtbPrivateC
+
+
+  # ==========================================
+  #  Security Group
+  # ==========================================
+
+  # EC2のセキュリティグループ
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow SSH from my IP" # セキュリティーグループの説明
+      VpcId: !Ref VPC
+      SecurityGroupIngress: # インバウンドのルール
+        - IpProtocol: tcp
+          FromPort: 22 # SSHのポート番号
+          ToPort: 22
+          CidrIp: !Sub "${MyIP}/32" # 自分のIPアドレスからの22番ポートへの通信だけを許可
+        - IpProtocol: tcp
+          FromPort: 8080 # 80の代替として開発環境でよく使われるポート
+          ToPort: 8080
+          SourceSecurityGroupId: !Ref ALBSecurityGroup # ALB経由の8080番ポートへの通信を許可
+      Tags:
+        - Key: Name
+          Value: aws-study-ec2-sg
+
+  # RDSのセキュリティグループ
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow connection from my EC2"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306 # MySQLのポート番号
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref EC2SecurityGroup # EC2本体からの3306番ポートへの通信を許可(SSH経由でのみ到達可能)
+      Tags:
+        - Key: Name
+          Value: aws-study-rds-sg
+
+  # ALBのセキュリティグループ
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow connection from my ALB"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80 # HTTPのポート番号
+          ToPort: 80
+          CidrIp: 0.0.0.0/0 # インターネット全体からの80番ポートへの通信を許可
+      Tags:
+        - Key: Name
+          Value: aws-study-alb-sg
+
+
+  # ==========================================
+  #  EC2 Instance
+  # ==========================================
+
+  # Amazon Linux 2023, t3.micro
+  EC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref EC2AMI
+      InstanceType: !Ref EC2InstanceType
+      KeyName: !Ref KeyName # パラメータから呼び出す
+      NetworkInterfaces: # ネットワーク設定をまとめて記述する(配置場所、SG、IP割り当て)
+        - DeviceIndex: 0 # NICの番号(通常は0固定)
+          AssociatePublicIpAddress: true # パブリックIPを自動割り当て
+          SubnetId: !Ref SubnetPublicA # 配置するサブネット
+          GroupSet:
+            - !Ref EC2SecurityGroup # 適用するセキュリティグループ
+      Tags:
+        - Key: Name
+          Value: aws-study-ec2
+
+
+  # ==========================================
+  #  RDS
+  # ==========================================
+
+  # DBサブネットグループの定義
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup 
+    Properties:
+      DBSubnetGroupDescription: "Subnet group for RDS"
+      SubnetIds:
+        - !Ref SubnetPrivateA
+        - !Ref SubnetPrivateC
+
+  # RDS作成
+  RDS:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      Engine: mysql
+      EngineVersion: !Ref DBEngineVersion
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      MasterUsername: admin
+      MasterUserPassword: !Sub "${DBPassword}"
+
+      DBSubnetGroupName: !Ref DBSubnetGroup # どのDBサブネットグループに接続するか
+      VPCSecurityGroups:
+        - !Ref RDSSecurityGroup
+
+      MultiAZ: false
+      PubliclyAccessible: false
+
+      DBInstanceClass: !Ref DBInstanceClass
+      StorageType: gp2
+      AllocatedStorage: "20"
+      MaxAllocatedStorage: 20
+
+      MonitoringInterval: 60
+      MonitoringRoleArn: !GetAtt RdsMonitoringRole.Arn
+      EnableCloudwatchLogsExports:
+        - audit
+        - error
+        - general
+        - slowquery
+
+      DBName: awsstudy
+      BackupRetentionPeriod: 1 # 自動バックアップを1日間保持
+      StorageEncrypted: true # ストレージを暗号化
+      Tags:
+        - Key: Name
+          Value: aws-study-rds
+
+  # RDSモニタリングロール
+  RdsMonitoringRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: monitoring.rds.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
+      Tags:
+        - Key: Name
+          Value: aws-study-rds-monitoring-role
+
+  # ==========================================
+  #  ELB
+  # ==========================================
+
+  # ALB作成
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internet-facing # インターネットからアクセス可能
+      Subnets:
+        - !Ref SubnetPublicA
+        - !Ref SubnetPublicC
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+      Tags:
+        - Key: Name
+          Value: aws-study-alb
+
+  # ターゲットグループ作成
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      TargetType: instance
+      Protocol: HTTP
+      Port: 8080
+      VpcId: !Ref VPC
+      Targets:
+        - Id: !Ref EC2
+          Port: 8080
+      # --- ヘルスチェック設定メモ ---
+      # 現状はデフォルトのパス("/")でトップページでヘルスチェックを実施。
+      # Spring Boot Actuator等を導入した際は、HealthCheckPathを"/actuator/health"等に変更し、
+      # Matcherを"200"のみに設定することを推奨。
+      # --------------------------
+      Matcher:
+        HttpCode: "200,300,301"
+      Tags:
+        - Key: Name
+          Value: aws-study-tg
+
+  # リスナー設定
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ALB
+      Protocol: HTTP
+      Port: 80
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+
+# ==========================================
+#  Outputs
+# ==========================================
+
+Outputs:
+  ALBDnsName:
+    Value: !GetAtt ALB.DNSName
+    Description: "DNS name of the ALB"
+  
+  RDSEC2PublicIP:
+    Value: !GetAtt EC2.PublicIp
+    Description: "Public IP of EC2"
+  
+  RDSEndpoint:
+    Value: !GetAtt RDS.Endpoint.Address
+    Description: "Endpoint of RDS"
