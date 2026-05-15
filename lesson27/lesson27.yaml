@@ -18,9 +18,9 @@ Parameters: # テンプレに対して外部から入力する
 
 Resources: # リソースの詳細を記載する
   
-# ==========================================
-#  VPC & Subnets
-# ==========================================
+  # ==========================================
+  #  VPC & Subnets
+  # ==========================================
 
   # VPCを作成
   VPC: # 論理ID、識別子、他のセクションから参照する際に使う
@@ -79,9 +79,9 @@ Resources: # リソースの詳細を記載する
           Value: aws-study-subnet-private-c
 
 
-# ==========================================
-#  IGW & VPCEndpoint
-# ==========================================
+  # ==========================================
+  #  IGW & VPCEndpoint
+  # ==========================================
 
   # IGWを作成
   IGW:
@@ -110,9 +110,9 @@ Resources: # リソースの詳細を記載する
         - !Ref RtbPrivateC
 
 
-# ==========================================
-#  Route Table
-# ==========================================
+  # ==========================================
+  #  Route Table
+  # ==========================================
 
   # --- ルートテーブルを作成 ---
   # Public
@@ -181,9 +181,9 @@ Resources: # リソースの詳細を記載する
       RouteTableId: !Ref RtbPrivateC
 
 
-# ==========================================
-#  Security Group
-# ==========================================
+  # ==========================================
+  #  Security Group
+  # ==========================================
 
   # EC2のセキュリティグループ
   EC2SecurityGroup:
@@ -235,9 +235,9 @@ Resources: # リソースの詳細を記載する
           Value: aws-study-alb-sg
 
 
-# ==========================================
-#  EC2 Instance
-# ==========================================
+  # ==========================================
+  #  EC2 Instance
+  # ==========================================
 
   # Amazon Linux 2023, t3.micro
   EC2:
@@ -257,9 +257,9 @@ Resources: # リソースの詳細を記載する
           Value: aws-study-ec2
 
 
-# ==========================================
-#  RDS
-# ==========================================
+  # ==========================================
+  #  RDS
+  # ==========================================
 
   # DBサブネットグループの定義
   DBSubnetGroup:
@@ -278,7 +278,7 @@ Resources: # リソースの詳細を記載する
     UpdateReplacePolicy: Delete
     Properties:
       Engine: mysql
-      EngineVersion: "8.4.8"
+      EngineVersion: "8.0.46"
       AllowMajorVersionUpgrade: false
       AutoMinorVersionUpgrade: true
       DBInstanceIdentifier: aws-study-rds
@@ -298,7 +298,7 @@ Resources: # リソースの詳細を記載する
       MaxAllocatedStorage: 20
 
       MonitoringInterval: 60
-      MonitoringRoleArn: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/rds-monitoring-role"
+      MonitoringRoleArn: !GetAtt RdsMonitoringRole.Arn
       EnableCloudwatchLogsExports:
         - audit
         - error
@@ -306,14 +306,33 @@ Resources: # リソースの詳細を記載する
         - slowquery
 
       DBName: awsstudy
-      BackupRetentionPeriod: 0
+      BackupRetentionPeriod: 1 # 自動バックアップを1日間保持
+      StorageEncrypted: true # ストレージを暗号化
       Tags:
         - Key: Name
           Value: aws-study-rds
 
-# ==========================================
-#  ELB
-# ==========================================
+  # RDSモニタリングロール
+  RdsMonitoringRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: aws-study-rds-monitoring-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: monitoring.rds.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
+      Tags:
+        - Key: Name
+          Value: aws-study-rds-monitoring-role
+
+  # ==========================================
+  #  ELB
+  # ==========================================
 
   # ALB作成
   ALB:
@@ -359,3 +378,21 @@ Resources: # リソースの詳細を記載する
       DefaultActions:
         - Type: forward
           TargetGroupArn: !Ref TargetGroup
+
+
+# ==========================================
+#  Outputs
+# ==========================================
+
+Outputs:
+  ALBDnsName:
+    Value: !GetAtt ALB.DNSName
+    Description: "DNS name of the ALB"
+  
+  RDSEC2PublicIP:
+    Value: !GetAtt EC2.PublicIp
+    Description: "Public IP of EC2"
+  
+  RDSEndpoint:
+    Value: !GetAtt RDS.Endpoint.Address
+    Description: "Endpoint of RDS"
