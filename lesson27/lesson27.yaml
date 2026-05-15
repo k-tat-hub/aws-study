@@ -15,6 +15,27 @@ Parameters: # テンプレに対して外部から入力する
       Type: String
       NoEcho: true 
       Description: "RDS master user password"
+  
+  EC2AMI:
+    Type: AWS::EC2::Image::Id
+    Default: "ami-0e668174d57c64015"
+    Description: "AMI ID for the EC2 instance. Note: This default ID is only valid for the ap-northeast-1 (Tokyo) region."
+  
+  EC2InstanceType:
+    Type: String
+    Default: "t3.micro"
+    Description: "EC2 instance type"
+  
+  DBInstanceClass:
+    Type: String
+    Default: "db.t3.micro"
+    Description: "RDS instance class"
+  
+  DBEngineVersion:
+    Type: String
+    Default: "8.0.46"
+    Description: "MySQL engine version"
+
 
 Resources: # リソースの詳細を記載する
   
@@ -243,8 +264,8 @@ Resources: # リソースの詳細を記載する
   EC2:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-0e668174d57c64015
-      InstanceType: t3.micro
+      ImageId: !Ref EC2AMI
+      InstanceType: !Ref EC2InstanceType
       KeyName: !Ref KeyName # パラメータから呼び出す
       NetworkInterfaces: # ネットワーク設定をまとめて記述する(配置場所、SG、IP割り当て)
         - DeviceIndex: 0 # NICの番号(通常は0固定)
@@ -266,7 +287,6 @@ Resources: # リソースの詳細を記載する
     Type: AWS::RDS::DBSubnetGroup 
     Properties:
       DBSubnetGroupDescription: "Subnet group for RDS"
-      DBSubnetGroupName: aws-study-db-subnet-group
       SubnetIds:
         - !Ref SubnetPrivateA
         - !Ref SubnetPrivateC
@@ -278,10 +298,9 @@ Resources: # リソースの詳細を記載する
     UpdateReplacePolicy: Delete
     Properties:
       Engine: mysql
-      EngineVersion: "8.0.46"
+      EngineVersion: !Ref DBEngineVersion
       AllowMajorVersionUpgrade: false
       AutoMinorVersionUpgrade: true
-      DBInstanceIdentifier: aws-study-rds
       MasterUsername: admin
       MasterUserPassword: !Sub "${DBPassword}"
 
@@ -292,7 +311,7 @@ Resources: # リソースの詳細を記載する
       MultiAZ: false
       PubliclyAccessible: false
 
-      DBInstanceClass: db.t3.micro
+      DBInstanceClass: !Ref DBInstanceClass
       StorageType: gp2
       AllocatedStorage: "20"
       MaxAllocatedStorage: 20
@@ -316,7 +335,6 @@ Resources: # リソースの詳細を記載する
   RdsMonitoringRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: aws-study-rds-monitoring-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -339,7 +357,6 @@ Resources: # リソースの詳細を記載する
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Type: application
-      Name: aws-study-alb
       Scheme: internet-facing # インターネットからアクセス可能
       Subnets:
         - !Ref SubnetPublicA
@@ -355,7 +372,6 @@ Resources: # リソースの詳細を記載する
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       TargetType: instance
-      Name: aws-study-tg
       Protocol: HTTP
       Port: 8080
       VpcId: !Ref VPC
