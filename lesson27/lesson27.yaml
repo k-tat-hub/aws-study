@@ -378,6 +378,11 @@ Resources: # リソースの詳細を記載する
       Targets:
         - Id: !Ref EC2
           Port: 8080
+      # --- ヘルスチェック設定メモ ---
+      # 現状はデフォルトのパス("/")でトップページでヘルスチェックを実施。
+      # Spring Boot Actuator等を導入した際は、HealthCheckPathを"/actuator/health"等に変更し、
+      # Matcherを"200"のみに設定することを推奨。
+      # --------------------------
       Matcher:
         HttpCode: "200,300,301"
       Tags:
