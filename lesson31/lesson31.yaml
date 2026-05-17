@@ -239,10 +239,11 @@ Resources: # リソースの詳細を記載する
           FromPort: 80 # HTTPのポート番号
           ToPort: 80
           SourceSecurityGroupId: !Ref ALBSecurityGroup # ALB経由の80番ポートへの通信を許可
-        - IpProtocol: tcp
-          FromPort: 8080 # 80の代替として開発環境でよく使われるポート
-          ToPort: 8080
-          SourceSecurityGroupId: !Ref ALBSecurityGroup # ALB経由の8080番ポートへの通信を許可
+        # springbootを使用する場合は8080に変更
+        # - IpProtocol: tcp
+        #   FromPort: 8080 # 80の代替として開発環境でよく使われるポート
+        #   ToPort: 8080
+        #   SourceSecurityGroupId: !Ref ALBSecurityGroup # ALB経由の8080番ポートへの通信を許可
       Tags:
         - Key: Name
           Value: aws-study-ec2-sg
@@ -400,13 +401,21 @@ Resources: # リソースの詳細を記載する
       Targets:
         - Id: !Ref EC2
           Port: 80
+
       # --- ヘルスチェック設定メモ ---
       # 現状はデフォルトのパス("/")でトップページでヘルスチェックを実施。
       # Spring Boot Actuator等を導入した際は、HealthCheckPathを"/actuator/health"等に変更し、
       # Matcherを"200"のみに設定することを推奨。
       # --------------------------
+      HealthCheckPath: /
+      HealthCheckPort: traffic-port
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+      HealthCheckTimeoutSeconds: 5
+      HealthCheckIntervalSeconds: 30
       Matcher:
         HttpCode: "200,300,301"
+        
       Tags:
         - Key: Name
           Value: aws-study-tg
