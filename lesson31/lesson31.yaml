@@ -1,20 +1,34 @@
 AWSTemplateFormatVersion: "2010-09-09" # テンプレのフォーマットのバージョンを指定する、決まり文句
 Description: "aws study lesson27" # テンプレの目的や内容について記述する、AWSTemplateFormatVersionの直後に書く必要あり
 
+
+# ==========================================
+#  Parameters
+# ==========================================
+
 Parameters: # テンプレに対して外部から入力する
+
+  # SSH接続用の自分のIP
   MyIP:
     Type: String
     NoEcho: true # 入力内容が画面上で「***」になる
     Description: "My Global IP Address for SSH"
 
+  # EC2のキーペア
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName # プルダウンで選択可能
     Description: "Select an existing EC2 KeyPair"
 
+  # RDSのパスワード
   DBPassword:
-      Type: String
-      NoEcho: true 
-      Description: "RDS master user password"
+    Type: String
+    NoEcho: true 
+    Description: "RDS master user password"
+
+  # アラート用メールアドレス
+  AlertEmail:
+    Type: String
+    Description: "Email address for alerts"
   
   EC2AMI:
     Type: AWS::EC2::Image::Id
@@ -36,6 +50,10 @@ Parameters: # テンプレに対して外部から入力する
     Default: "8.0.46"
     Description: "MySQL engine version"
 
+
+# ==========================================
+#  Resources
+# ==========================================
 
 Resources: # リソースの詳細を記載する
   
@@ -218,6 +236,10 @@ Resources: # リソースの詳細を記載する
           ToPort: 22
           CidrIp: !Sub "${MyIP}/32" # 自分のIPアドレスからの22番ポートへの通信だけを許可
         - IpProtocol: tcp
+          FromPort: 80 # HTTPのポート番号
+          ToPort: 80
+          SourceSecurityGroupId: !Ref ALBSecurityGroup # ALB経由の80番ポートへの通信を許可
+        - IpProtocol: tcp
           FromPort: 8080 # 80の代替として開発環境でよく使われるポート
           ToPort: 8080
           SourceSecurityGroupId: !Ref ALBSecurityGroup # ALB経由の8080番ポートへの通信を許可
@@ -373,11 +395,11 @@ Resources: # リソースの詳細を記載する
     Properties:
       TargetType: instance
       Protocol: HTTP
-      Port: 8080
+      Port: 80
       VpcId: !Ref VPC
       Targets:
         - Id: !Ref EC2
-          Port: 8080
+          Port: 80
       # --- ヘルスチェック設定メモ ---
       # 現状はデフォルトのパス("/")でトップページでヘルスチェックを実施。
       # Spring Boot Actuator等を導入した際は、HealthCheckPathを"/actuator/health"等に変更し、
@@ -401,19 +423,201 @@ Resources: # リソースの詳細を記載する
           TargetGroupArn: !Ref TargetGroup
 
 
+  # ==========================================
+  #  SNS
+  # ==========================================
+
+  # SNSトピック
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: aws-study-alarm-topic
+
+  # メール通知の設定
+  SNSSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref AlarmTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+
+  # ==========================================
+  # CloudWatch Logs
+  # ==========================================
+
+  WAFLogGroup: 
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties: 
+      LogGroupName: !Sub "aws-waf-logs-${AWS::StackName}" 
+      RetentionInDays: 7
+
+
+  # ==========================================
+  # WAF
+  # ==========================================
+
+  # WAF WebACL
+  WebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Sub "${AWS::StackName}-web-acl" # WebACLの名前
+      Scope: REGIONAL # ALBに紐づける場合はREGIONAL（CloudFrontの場合はCLOUDFRONT）
+      DefaultAction:
+        Allow: {} # デフォルトはすべてのリクエストを許可
+
+      Rules:
+        - Name: AWSManagedRulesCommonRuleSet # ルールの名前
+          Priority: 1 # ルールの優先度（数字が小さいほど先に評価される）
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true # サンプルリクエストの記録を有効化
+            CloudWatchMetricsEnabled: true # CloudWatchメトリクスの記録を有効化
+            MetricName: AWSManagedRulesCommonRuleSet # メトリクスの名前
+
+        - Name: AWSManagedRulesKnownBadInputs
+          Priority: 2
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesKnownBadInputsRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: KnownBadInputsMetric
+
+      VisibilityConfig:
+        SampledRequestsEnabled: true # WebACL全体のサンプルリクエストの記録を有効化
+        CloudWatchMetricsEnabled: true # WebACL全体のCloudWatchメトリクスを有効化
+        MetricName: !Sub "${AWS::StackName}-web-acl-metrics" # WebACL全体のメトリクス名
+
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-web-acl"
+
+  # WAFをALBに紐づけ
+  WebACLAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Properties:
+      ResourceArn: !Ref ALB
+      WebACLArn: !GetAtt WebACL.Arn
+
+  # WAFのログをCloudWatch Logsに送る
+  WAFLoggingConfiguration:
+    Type: AWS::WAFv2::LoggingConfiguration
+    Properties:
+      ResourceArn: !GetAtt WebACL.Arn
+      LogDestinationConfigs:
+        - !GetAtt WAFLogGroup.Arn
+
+
+  # ==========================================
+  #  CloudWatch Alarm
+  # ==========================================
+
+  # EC2のCPU使用率のアラーム
+  EC2CPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-ec2-cpu-over"
+      AlarmDescription: "EC2 CPU usage over 5%"
+      Namespace: AWS/EC2
+      MetricName: CPUUtilization
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref EC2
+      Period: 60
+      Statistic: Average
+      Threshold: 5
+      EvaluationPeriods: 1 # 学習用設定、本来は数値を大きくして確実な判定にする、何回チェックするか
+      DatapointsToAlarm: 1 # 学習用設定、本来は数値を大きくして確実な判定にする、何回エラーが出たらアラームを送るか
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: "notBreaching" # データがない時はアラームを出さない
+      AlarmActions:
+        - !Ref AlarmTopic
+
+  # アプリのサーバーエラー検知用
+  ALB5XXAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-alb-5xx-errors"
+      AlarmDescription: ALB 5XX Errors
+      Namespace: AWS/ApplicationELB
+      MetricName: HTTPCode_ELB_5XX_Count
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !GetAtt ALB.LoadBalancerFullName
+      Period: 300
+      Statistic: Sum
+      Threshold: 10
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: "notBreaching" 
+      AlarmActions:
+        - !Ref AlarmTopic
+
+  # 不正アクセス検知用
+  WAFBlockedRequestsAlarm: 
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-waf-blocked-requests" 
+      AlarmDescription: "WAF Blocked requests detected" 
+      Namespace: AWS/WAFV2
+      MetricName: BlockedRequests
+      Dimensions: 
+        - Name: WebACL # どのWAFか
+          Value: !Sub "${AWS::StackName}-web-acl" 
+        - Name: Rule # どのルールか
+          Value: ALL
+        - Name: Region # リージョナルかグローバルか
+          Value: !Ref 'AWS::Region'
+      Period: 60 
+      Statistic: Sum 
+      Threshold: 1 
+      EvaluationPeriods: 1 
+      DatapointsToAlarm: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold 
+      TreatMissingData: "notBreaching" 
+      AlarmActions: 
+        - !Ref AlarmTopic
+
 # ==========================================
 #  Outputs
 # ==========================================
 
 Outputs:
+
+  # ALBのドメイン名
   ALBDnsName:
     Value: !GetAtt ALB.DNSName
     Description: "DNS name of the ALB"
   
+  # EC2のパブリックIP
   RDSEC2PublicIP:
     Value: !GetAtt EC2.PublicIp
     Description: "Public IP of EC2"
   
+  # RDSのエンドポイント
   RDSEndpoint:
     Value: !GetAtt RDS.Endpoint.Address
     Description: "Endpoint of RDS"
+
+  # WAFのARN
+  WebACLArn:
+    Value: !GetAtt WebACL.Arn
+    Description: "ARN of the WAF WebACL"
+  
+  # WAFのLogGroup名
+  WAFLogGroupName:
+    Value: !Ref WAFLogGroup
+    Description: "Name of the WAF Log Group"
