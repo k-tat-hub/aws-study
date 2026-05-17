@@ -2,7 +2,9 @@
 .terraform/
 *.tfstate
 *.tfstate.*
+.terraform.lock.info
+*.tfstate.lock.info
+*.tfplan
 *.tfvars
 *.tfvars.json
 *.log
-.terraform.lock.hcl
