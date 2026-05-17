@@ -576,7 +576,7 @@ Resources: # リソースの詳細を記載する
       MetricName: BlockedRequests
       Dimensions: 
         - Name: WebACL # どのWAFか
-          Value: !Sub "${AWS::StackName}-web-acl" 
+          Value: !Sub "${AWS::StackName}-web-acl-metrics" 
         - Name: Rule # どのルールか
           Value: ALL
         - Name: Region # リージョナルかグローバルか
