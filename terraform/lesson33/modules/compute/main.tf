@@ -21,27 +21,23 @@ resource "aws_security_group" "ec2" {
 
   # アウトバウンド（外への通信）を全解放
   egress {
+    protocol    = "-1"
     from_port   = 0
     to_port     = 0
-    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "lesson33-ec2-sg"
-  }
+  tags = { Name = "lesson33-ec2-sg" }
 }
 
 resource "aws_instance" "ec2" {
   ami           = var.ec2_ami
-  instance_type = var.ec2_instancetype
-  subnet_id     = var.public_subnet_a_id
+  instance_type = var.ec2_instance_type
+  subnet_id     = var.subnet_public_a_id
   vpc_security_group_ids = [
     aws_security_group.ec2.id
   ]
   key_name = var.ec2_keypair
 
-  tags = {
-    Name = "lesson33-ec2"
-  }
+  tags = { Name = "lesson33-ec2" }
 }

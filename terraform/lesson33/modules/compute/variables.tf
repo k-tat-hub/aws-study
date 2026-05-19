@@ -12,12 +12,12 @@ variable "ec2_ami" {
   default = "ami-0e668174d57c64015"
 }
 
-variable "ec2_instancetype" {
+variable "ec2_instance_type" {
   type    = string
   default = "t3.micro"
 }
 
-variable "public_subnet_a_id" {
+variable "subnet_public_a_id" {
   type = string
 }
 

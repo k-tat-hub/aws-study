@@ -1,13 +1,31 @@
 module "network" {
   source = "../../modules/network"
+
+  vpc_cidr               = "10.0.0.0/16"
+  subnet_public_a_cidr   = "10.0.1.0/24"
+  subnet_public_c_cidr   = "10.0.2.0/24"
+  subnet_private_a_cidr  = "10.0.3.0/24"
+  subnet_private_c_cidr  = "10.0.4.0/24"
 }
 
 module "compute" {
   source = "../../modules/compute"
 
   vpc_id             = module.network.vpc_id
-  public_subnet_a_id = module.network.public_subnet_a_id
+  subnet_public_a_id = module.network.subnet_public_a_id
   ec2_ami            = var.ec2_ami
   ec2_keypair        = var.ec2_keypair
   MyIP               = var.MyIP
+}
+
+module "storage" {
+  source = "../../modules/storage"
+
+  vpc_id              = module.network.vpc_id
+  subnet_private_a_id = module.network.subnet_private_a_id
+  subnet_private_c_id = module.network.subnet_private_c_id
+  ec2_sg_id           = module.compute.ec2_sg_id
+  db_engine_version   = var.db_engine_version
+  db_instance_class   = var.db_instance_class
+  db_password         = var.db_password
 }
