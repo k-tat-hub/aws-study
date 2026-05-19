@@ -1,3 +1,6 @@
+# ==========================================
+# EC2のセキュリティグループ
+# ==========================================
 resource "aws_security_group" "ec2" {
   name        = "lesson33-ec2-sg"
   description = "Allow SSH and HTTP access"
@@ -13,9 +16,9 @@ resource "aws_security_group" "ec2" {
 
   # HTTP (80) の許可
   ingress {
-    protocol    = "tcp"
-    from_port   = 80
-    to_port     = 80
+    protocol        = "tcp"
+    from_port       = 80
+    to_port         = 80
     security_groups = [var.alb_sg_id]
   }
 
@@ -30,10 +33,14 @@ resource "aws_security_group" "ec2" {
   tags = { Name = "lesson33-ec2-sg" }
 }
 
+# ==========================================
+# EC2インスタンスの作成
+# ==========================================
 resource "aws_instance" "ec2" {
   ami           = var.ec2_ami
   instance_type = var.ec2_instance_type
   subnet_id     = var.subnet_public_a_id
+  associate_public_ip_address = true
   vpc_security_group_ids = [
     aws_security_group.ec2.id
   ]

@@ -22,11 +22,15 @@ variable "db_password" {
 }
 
 variable "db_engine_version" {
-  type = string
+  type    = string
   default = "8.0.46"
 }
 
 variable "db_instance_class" {
-  type = string
+  type    = string
   default = "db.t3.micro"
+}
+
+variable "alarm_email" {
+  type = string
 }

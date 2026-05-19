@@ -1,28 +1,23 @@
 variable "vpc_cidr" {
-  type        = string
-  description = "VPC全体のCIDRブロック"
+  type = string
 }
 
 variable "subnet_public_a_cidr" {
-  type        = string
-  description = "パブリックサブネットAのCIDR"
+  type = string
 }
 
 variable "subnet_public_c_cidr" {
-  type        = string
-  description = "パブリックサブネットCのCIDR"
+  type = string
 }
 
 variable "subnet_private_a_cidr" {
-  type        = string
-  description = "プライベートサブネットAのCIDR"
+  type = string
 }
 
 variable "subnet_private_c_cidr" {
-  type        = string
-  description = "プライベートサブネットCのCIDR"
+  type = string
 }
 
 variable "ec2_id" {
-  type        = string
+  type = string
 }

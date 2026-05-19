@@ -26,6 +26,6 @@ variable "subnet_public_a_id" {
 }
 
 variable "alb_sg_id" {
-   type = string
+  type = string
 }
 
