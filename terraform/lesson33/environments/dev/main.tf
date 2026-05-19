@@ -6,6 +6,7 @@ module "network" {
   subnet_public_c_cidr   = "10.0.2.0/24"
   subnet_private_a_cidr  = "10.0.3.0/24"
   subnet_private_c_cidr  = "10.0.4.0/24"
+  ec2_id = module.compute.ec2_id
 }
 
 module "compute" {
@@ -16,6 +17,7 @@ module "compute" {
   ec2_ami            = var.ec2_ami
   ec2_keypair        = var.ec2_keypair
   MyIP               = var.MyIP
+  alb_sg_id          = module.network.alb_sg_id
 }
 
 module "storage" {

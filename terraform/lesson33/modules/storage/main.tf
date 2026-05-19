@@ -44,6 +44,7 @@ resource "aws_db_subnet_group" "rds" {
 # RDSインスタンスの作成
 # ==========================================
 resource "aws_db_instance" "rds" {
+  identifier           = "lesson33-rds"
   engine               = "mysql"
   engine_version       = var.db_engine_version
   username             = "admin"
@@ -71,7 +72,7 @@ resource "aws_db_instance" "rds" {
   monitoring_role_arn  = aws_iam_role.rds_monitoring.arn
   enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
 
-  tags = { name = "lesson33-rds" }
+  tags = { Name = "lesson33-rds" }
 }
 
 # ==========================================

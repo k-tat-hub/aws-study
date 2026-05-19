@@ -22,3 +22,7 @@ variable "subnet_private_c_cidr" {
   type        = string
   description = "プライベートサブネットCのCIDR"
 }
+
+variable "ec2_id" {
+  type        = string
+}

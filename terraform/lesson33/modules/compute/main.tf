@@ -16,7 +16,7 @@ resource "aws_security_group" "ec2" {
     protocol    = "tcp"
     from_port   = 80
     to_port     = 80
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [var.alb_sg_id]
   }
 
   # アウトバウンド（外への通信）を全解放

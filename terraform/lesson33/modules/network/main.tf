@@ -135,3 +135,83 @@ resource "aws_vpc_endpoint" "s3" {
 
   tags = { Name = "lesson33-vpce-s3" }
 }
+
+# ==========================================
+# ALBの作成
+# ==========================================
+# ALBのセキュリティグループ
+resource "aws_security_group" "alb_sg" {
+  name        = "lesson33-alb-sg"
+  description = "Allow connection from my ALB"
+  vpc_id      = aws_vpc.main.id
+
+  # インバウンド
+  ingress {
+    protocol    = "tcp"
+    from_port   = 80
+    to_port     = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # アウトバウンド
+  egress {
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "lesson33-alb-sg" }
+}
+
+# ALBの作成
+resource "aws_lb" "alb" {
+  name               = "lesson33-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb_sg.id]
+  subnets            = [aws_subnet.public_a.id, aws_subnet.public_c.id]
+
+  tags = { Name = "lesson33-alb" }
+}
+
+# ターゲットグループの作成
+resource "aws_lb_target_group" "tg" {
+  name        = "lesson33-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "instance"
+
+  # ヘルスチェック設定
+  health_check {
+    path                = "/"
+    port                = "traffic-port"
+    healthy_threshold   = 5
+    unhealthy_threshold = 2
+    timeout             = 5
+    interval            = 30
+    matcher             = "200,300,301"
+  }
+
+  tags = { Name = "lesson33-tg" }
+}
+
+# ターゲットグループのアタッチ
+resource "aws_lb_target_group_attachment" "tg_attachment" {
+  target_group_arn = aws_lb_target_group.tg.arn
+  target_id        = var.ec2_id
+  port             = 80
+}
+
+# リスナーの設定
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg.arn
+  }
+}

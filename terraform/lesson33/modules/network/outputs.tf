@@ -13,3 +13,12 @@ output "subnet_private_a_id" {
 output "subnet_private_c_id" {
   value = aws_subnet.private_c.id
 }
+
+output "alb_dns_name" {
+  value       = aws_lb.alb.dns_name
+  description = "DNS name of ALB"
+}
+
+output "alb_sg_id" {
+  value = aws_security_group.alb_sg.id
+}

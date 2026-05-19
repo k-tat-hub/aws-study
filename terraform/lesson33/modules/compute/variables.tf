@@ -17,11 +17,15 @@ variable "ec2_instance_type" {
   default = "t3.micro"
 }
 
+variable "ec2_keypair" {
+  type = string
+}
+
 variable "subnet_public_a_id" {
   type = string
 }
 
-variable "ec2_keypair" {
-  type = string
+variable "alb_sg_id" {
+   type = string
 }
 
