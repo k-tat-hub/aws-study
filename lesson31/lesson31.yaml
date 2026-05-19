@@ -612,7 +612,7 @@ Outputs:
     Description: "DNS name of the ALB"
   
   # EC2のパブリックIP
-  EC2PublicIP:
+  RDSEC2PublicIP:
     Value: !GetAtt EC2.PublicIp
     Description: "Public IP of EC2"
   
