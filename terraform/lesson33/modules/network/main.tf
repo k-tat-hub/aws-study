@@ -11,8 +11,8 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = { 
-    Name = "lesson33-vpc" 
+  tags = {
+    Name = "lesson33-vpc"
   }
 }
 
@@ -26,8 +26,8 @@ resource "aws_subnet" "public_a" {
   availability_zone       = "ap-northeast-1a"
   map_public_ip_on_launch = true
 
-  tags = { 
-    Name = "lesson33-subnet-public-a" 
+  tags = {
+    Name = "lesson33-subnet-public-a"
   }
 }
 
@@ -36,8 +36,8 @@ resource "aws_subnet" "private_a" {
   cidr_block        = var.subnet_private_a_cidr
   availability_zone = "ap-northeast-1a"
 
-  tags = { 
-    Name = "lesson33-subnet-private-a" 
+  tags = {
+    Name = "lesson33-subnet-private-a"
   }
 }
 
@@ -48,8 +48,8 @@ resource "aws_subnet" "public_c" {
   availability_zone       = "ap-northeast-1c"
   map_public_ip_on_launch = true
 
-  tags = { 
-    Name = "lesson33-subnet-public-c" 
+  tags = {
+    Name = "lesson33-subnet-public-c"
   }
 }
 
@@ -58,19 +58,19 @@ resource "aws_subnet" "private_c" {
   cidr_block        = var.subnet_private_c_cidr
   availability_zone = "ap-northeast-1c"
 
-  tags = { 
-    Name = "lesson33-subnet-private-c" 
+  tags = {
+    Name = "lesson33-subnet-private-c"
   }
 }
 
 # ==========================================
 # IGWの作成
 # ==========================================
-resource "aws_internet_gateway" "igw" {
+resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
-  tags = { 
-    Name = "lesson33-igw" 
+  tags = {
+    Name = "lesson33-igw"
   }
 }
 
@@ -80,16 +80,16 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
-  tags = { 
-    Name = "lesson33-rtb-public" 
+  tags = {
+    Name = "lesson33-rtb-public"
   }
 }
 
 # 0.0.0.0/0へのルートを追加
-resource "aws_route" "public_internet" {
+resource "aws_route" "public" {
   route_table_id         = aws_route_table.public.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.igw.id
+  gateway_id             = aws_internet_gateway.main.id
 
 }
 
@@ -112,8 +112,8 @@ resource "aws_route_table_association" "public_c" {
 resource "aws_route_table" "private_a" {
   vpc_id = aws_vpc.main.id
 
-  tags = { 
-    Name = "lesson33-rtb-private-a" 
+  tags = {
+    Name = "lesson33-rtb-private-a"
   }
 }
 
@@ -121,8 +121,8 @@ resource "aws_route_table" "private_a" {
 resource "aws_route_table" "private_c" {
   vpc_id = aws_vpc.main.id
 
-  tags = { 
-    Name = "lesson33-rtb-private-c" 
+  tags = {
+    Name = "lesson33-rtb-private-c"
   }
 }
 
@@ -151,8 +151,8 @@ resource "aws_vpc_endpoint" "s3" {
     aws_route_table.private_c.id
   ]
 
-  tags = { 
-    Name = "lesson33-vpce-s3" 
+  tags = {
+    Name = "lesson33-vpce-s3"
   }
 }
 
@@ -160,16 +160,16 @@ resource "aws_vpc_endpoint" "s3" {
 # ALBの作成
 # ==========================================
 # ALBのセキュリティグループ
-resource "aws_security_group" "alb_sg" {
+resource "aws_security_group" "alb" {
   name        = "lesson33-alb-sg"
   description = "Allow connection for my ALB"
   vpc_id      = aws_vpc.main.id
 
   # インバウンド
   ingress {
-    protocol    = "tcp"
-    from_port   = 80
-    to_port     = 80
+    protocol  = "tcp"
+    from_port = 80
+    to_port   = 80
     cidr_blocks = [
       "0.0.0.0/0"
     ]
@@ -177,16 +177,16 @@ resource "aws_security_group" "alb_sg" {
 
   # アウトバウンド
   egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
     cidr_blocks = [
       "0.0.0.0/0"
     ]
   }
 
-  tags = { 
-    Name = "lesson33-alb-sg" 
+  tags = {
+    Name = "lesson33-alb-sg"
   }
 }
 
@@ -196,22 +196,22 @@ resource "aws_lb" "alb" {
   internal           = false
   load_balancer_type = "application"
 
-  security_groups    = [
-    aws_security_group.alb_sg.id
+  security_groups = [
+    aws_security_group.alb.id
   ]
 
-  subnets            = [
-    aws_subnet.public_a.id, 
+  subnets = [
+    aws_subnet.public_a.id,
     aws_subnet.public_c.id
   ]
 
-  tags = { 
-    Name = "lesson33-alb" 
+  tags = {
+    Name = "lesson33-alb"
   }
 }
 
 # ターゲットグループの作成
-resource "aws_lb_target_group" "tg" {
+resource "aws_lb_target_group" "ec2" {
   name        = "lesson33-tg"
   port        = 80
   protocol    = "HTTP"
@@ -229,14 +229,14 @@ resource "aws_lb_target_group" "tg" {
     matcher             = "200,300,301"
   }
 
-  tags = { 
-    Name = "lesson33-tg" 
+  tags = {
+    Name = "lesson33-tg"
   }
 }
 
 # ターゲットグループのアタッチ
-resource "aws_lb_target_group_attachment" "tg_attachment" {
-  target_group_arn = aws_lb_target_group.tg.arn
+resource "aws_lb_target_group_attachment" "ec2" {
+  target_group_arn = aws_lb_target_group.ec2.arn
   target_id        = var.ec2_id
   port             = 80
 }
@@ -249,6 +249,6 @@ resource "aws_lb_listener" "http" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.tg.arn
+    target_group_arn = aws_lb_target_group.ec2.arn
   }
 }

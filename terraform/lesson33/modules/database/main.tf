@@ -1,16 +1,16 @@
 # ==========================================
 # RDSのセキュリティグループ
 # ==========================================
-resource "aws_security_group" "rds_sg" {
+resource "aws_security_group" "rds" {
   name        = "lesson33-rds-sg"
   description = "Allow connection from my EC2"
   vpc_id      = var.vpc_id
 
   # インバウンド
   ingress {
-    protocol        = "tcp"
-    from_port       = 3306
-    to_port         = 3306
+    protocol  = "tcp"
+    from_port = 3306
+    to_port   = 3306
     security_groups = [
       var.ec2_sg_id
     ]
@@ -18,16 +18,16 @@ resource "aws_security_group" "rds_sg" {
 
   # アウトバウンド
   egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
+    protocol  = "-1"
+    from_port = 0
+    to_port   = 0
     cidr_blocks = [
       "0.0.0.0/0"
     ]
   }
 
-  tags = { 
-    Name = "lesson33-rds-sg" 
+  tags = {
+    Name = "lesson33-rds-sg"
   }
 }
 
@@ -43,8 +43,8 @@ resource "aws_db_subnet_group" "rds" {
     var.subnet_private_c_id
   ]
 
-  tags = { 
-    Name = "lesson33-rds-subnet-group" 
+  tags = {
+    Name = "lesson33-rds-subnet-group"
   }
 }
 
@@ -67,9 +67,9 @@ resource "aws_db_instance" "rds" {
 
   availability_zone = "ap-northeast-1a"
 
-  db_subnet_group_name   = aws_db_subnet_group.rds.name
+  db_subnet_group_name = aws_db_subnet_group.rds.name
   vpc_security_group_ids = [
-    aws_security_group.rds_sg.id
+    aws_security_group.rds.id
   ]
 
   multi_az                = false
@@ -78,17 +78,17 @@ resource "aws_db_instance" "rds" {
   backup_retention_period = 1
 
   # モニタリング設定
-  monitoring_interval             = 60
-  monitoring_role_arn             = aws_iam_role.rds_monitoring.arn
+  monitoring_interval = 60
+  monitoring_role_arn = aws_iam_role.rds_monitoring.arn
   enabled_cloudwatch_logs_exports = [
-    "audit", 
-    "error", 
-    "general", 
+    "audit",
+    "error",
+    "general",
     "slowquery"
   ]
 
-  tags = { 
-    Name = "lesson33-rds" 
+  tags = {
+    Name = "lesson33-rds"
   }
 }
 
@@ -111,12 +111,12 @@ resource "aws_iam_role" "rds_monitoring" {
     ]
   })
 
-  tags = { 
-    Name = "lesson33-rds-monitoring-role" 
+  tags = {
+    Name = "lesson33-rds-monitoring-role"
   }
 }
 
-resource "aws_iam_role_policy_attachment" "rds_monitoring_attach" {
+resource "aws_iam_role_policy_attachment" "rds_monitoring" {
   role       = aws_iam_role.rds_monitoring.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
 }

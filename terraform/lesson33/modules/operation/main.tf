@@ -1,15 +1,15 @@
 # ==========================================
 # SNSの設定
 # ==========================================
-resource "aws_sns_topic" "alarm_topic" {
+resource "aws_sns_topic" "alarm" {
   name = "lesson33-alarm-topic"
-  tags = { 
-    Name = "lesson33-alarm-topic" 
+  tags = {
+    Name = "lesson33-alarm-topic"
   }
 }
 
-resource "aws_sns_topic_subscription" "email_sub" {
-  topic_arn = aws_sns_topic.alarm_topic.arn
+resource "aws_sns_topic_subscription" "email" {
+  topic_arn = aws_sns_topic.alarm.arn
   protocol  = "email"
   endpoint  = var.alarm_email
 }
@@ -18,13 +18,13 @@ resource "aws_sns_topic_subscription" "email_sub" {
 # アラームの作成
 # ==========================================
 # アラーム1: EC2のCPU使用率
-resource "aws_cloudwatch_metric_alarm" "ec2_cpu_alarm" {
-  alarm_name          = "lesson33-ec2-cpu-over"
-  alarm_description   = "EC2 CPU usage over 5%"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  dimensions          = { 
-    InstanceId = var.ec2_id 
+resource "aws_cloudwatch_metric_alarm" "ec2_cpu" {
+  alarm_name        = "lesson33-ec2-cpu-over"
+  alarm_description = "EC2 CPU usage over 5%"
+  metric_name       = "CPUUtilization"
+  namespace         = "AWS/EC2"
+  dimensions = {
+    InstanceId = var.ec2_id
   }
   period              = 60
   statistic           = "Average"
@@ -35,18 +35,18 @@ resource "aws_cloudwatch_metric_alarm" "ec2_cpu_alarm" {
   treat_missing_data  = "notBreaching"
 
   alarm_actions = [
-    aws_sns_topic.alarm_topic.arn
+    aws_sns_topic.alarm.arn
   ]
 }
 
 # アラーム2: ALB 5XX エラー
-resource "aws_cloudwatch_metric_alarm" "alb_5xx_alarm" {
-  alarm_name          = "lesson33-alb-5xx-errors"
-  alarm_description   = "ALB 5XX Errors"
-  metric_name         = "HTTPCode_ELB_5XX_Count"
-  namespace           = "AWS/ApplicationELB"
-  dimensions          = { 
-    LoadBalancer = var.alb_arn_suffix 
+resource "aws_cloudwatch_metric_alarm" "alb_5xx" {
+  alarm_name        = "lesson33-alb-5xx-errors"
+  alarm_description = "ALB 5XX Errors"
+  metric_name       = "HTTPCode_ELB_5XX_Count"
+  namespace         = "AWS/ApplicationELB"
+  dimensions = {
+    LoadBalancer = var.alb_arn_suffix
   }
   period              = 300
   statistic           = "Sum"
@@ -57,12 +57,12 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_alarm" {
   treat_missing_data  = "notBreaching"
 
   alarm_actions = [
-    aws_sns_topic.alarm_topic.arn
+    aws_sns_topic.alarm.arn
   ]
 }
 
 # アラーム3: WAF 不正アクセス検知
-resource "aws_cloudwatch_metric_alarm" "waf_blocked_alarm" {
+resource "aws_cloudwatch_metric_alarm" "waf_blocked" {
   alarm_name        = "lesson33-waf-blocked-requests"
   alarm_description = "WAF Blocked requests detected"
   metric_name       = "BlockedRequests"
@@ -81,6 +81,6 @@ resource "aws_cloudwatch_metric_alarm" "waf_blocked_alarm" {
   treat_missing_data  = "notBreaching"
 
   alarm_actions = [
-    aws_sns_topic.alarm_topic.arn
+    aws_sns_topic.alarm.arn
   ]
 }

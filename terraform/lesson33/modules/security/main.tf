@@ -1,7 +1,7 @@
 # ==========================================
 # WAFの作成
 # ==========================================
-resource "aws_wafv2_web_acl" "web_acl" {
+resource "aws_wafv2_web_acl" "main" {
   name  = "lesson33-web-acl"
   scope = "REGIONAL"
 
@@ -61,31 +61,31 @@ resource "aws_wafv2_web_acl" "web_acl" {
     metric_name                = "lesson33-web-acl-metrics"
   }
 
-  tags = { 
-    Name = "lesson33-web-acl" 
+  tags = {
+    Name = "lesson33-web-acl"
   }
 }
 
 # WAFをALBに紐づけ
-resource "aws_wafv2_web_acl_association" "waf_alb_assoc" {
+resource "aws_wafv2_web_acl_association" "alb" {
   resource_arn = var.alb_arn
-  web_acl_arn  = aws_wafv2_web_acl.web_acl.arn
+  web_acl_arn  = aws_wafv2_web_acl.main.arn
 }
 
 # ==========================================
 # CloudWatch Logsとの連携
 # ==========================================
-resource "aws_cloudwatch_log_group" "waf_log" {
+resource "aws_cloudwatch_log_group" "waf" {
   name              = "aws-waf-logs-lesson33"
   retention_in_days = 7
-  tags              = { 
-    Name = "aws-waf-logs-lesson33" 
+  tags = {
+    Name = "aws-waf-logs-lesson33"
   }
 }
 
-resource "aws_wafv2_web_acl_logging_configuration" "waf_logging" {
+resource "aws_wafv2_web_acl_logging_configuration" "main" {
   log_destination_configs = [
-    aws_cloudwatch_log_group.waf_log.arn
+    aws_cloudwatch_log_group.waf.arn
   ]
-  resource_arn            = aws_wafv2_web_acl.web_acl.arn
+  resource_arn = aws_wafv2_web_acl.main.arn
 }
