@@ -11,7 +11,9 @@ resource "aws_security_group" "rds_sg" {
     protocol        = "tcp"
     from_port       = 3306
     to_port         = 3306
-    security_groups = [var.ec2_sg_id]
+    security_groups = [
+      var.ec2_sg_id
+    ]
   }
 
   # アウトバウンド
@@ -19,10 +21,14 @@ resource "aws_security_group" "rds_sg" {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
   }
 
-  tags = { Name = "lesson33-rds-sg" }
+  tags = { 
+    Name = "lesson33-rds-sg" 
+  }
 }
 
 # ==========================================
@@ -37,7 +43,9 @@ resource "aws_db_subnet_group" "rds" {
     var.subnet_private_c_id
   ]
 
-  tags = { Name = "lesson33-rds-subnet-group" }
+  tags = { 
+    Name = "lesson33-rds-subnet-group" 
+  }
 }
 
 # ==========================================
@@ -60,7 +68,9 @@ resource "aws_db_instance" "rds" {
   availability_zone = "ap-northeast-1a"
 
   db_subnet_group_name   = aws_db_subnet_group.rds.name
-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  vpc_security_group_ids = [
+    aws_security_group.rds_sg.id
+  ]
 
   multi_az                = false
   publicly_accessible     = false
@@ -70,9 +80,16 @@ resource "aws_db_instance" "rds" {
   # モニタリング設定
   monitoring_interval             = 60
   monitoring_role_arn             = aws_iam_role.rds_monitoring.arn
-  enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
+  enabled_cloudwatch_logs_exports = [
+    "audit", 
+    "error", 
+    "general", 
+    "slowquery"
+  ]
 
-  tags = { Name = "lesson33-rds" }
+  tags = { 
+    Name = "lesson33-rds" 
+  }
 }
 
 # ==========================================
@@ -94,7 +111,9 @@ resource "aws_iam_role" "rds_monitoring" {
     ]
   })
 
-  tags = { Name = "lesson33-rds-monitoring-role" }
+  tags = { 
+    Name = "lesson33-rds-monitoring-role" 
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "rds_monitoring_attach" {

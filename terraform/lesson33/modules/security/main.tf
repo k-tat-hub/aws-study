@@ -61,7 +61,9 @@ resource "aws_wafv2_web_acl" "web_acl" {
     metric_name                = "lesson33-web-acl-metrics"
   }
 
-  tags = { Name = "lesson33-web-acl" }
+  tags = { 
+    Name = "lesson33-web-acl" 
+  }
 }
 
 # WAFをALBに紐づけ
@@ -76,10 +78,14 @@ resource "aws_wafv2_web_acl_association" "waf_alb_assoc" {
 resource "aws_cloudwatch_log_group" "waf_log" {
   name              = "aws-waf-logs-lesson33"
   retention_in_days = 7
-  tags              = { Name = "aws-waf-logs-lesson33" }
+  tags              = { 
+    Name = "aws-waf-logs-lesson33" 
+  }
 }
 
 resource "aws_wafv2_web_acl_logging_configuration" "waf_logging" {
-  log_destination_configs = [aws_cloudwatch_log_group.waf_log.arn]
+  log_destination_configs = [
+    aws_cloudwatch_log_group.waf_log.arn
+  ]
   resource_arn            = aws_wafv2_web_acl.web_acl.arn
 }

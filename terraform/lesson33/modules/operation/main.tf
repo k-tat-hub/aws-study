@@ -3,7 +3,9 @@
 # ==========================================
 resource "aws_sns_topic" "alarm_topic" {
   name = "lesson33-alarm-topic"
-  tags = { Name = "lesson33-alarm-topic" }
+  tags = { 
+    Name = "lesson33-alarm-topic" 
+  }
 }
 
 resource "aws_sns_topic_subscription" "email_sub" {
@@ -21,7 +23,9 @@ resource "aws_cloudwatch_metric_alarm" "ec2_cpu_alarm" {
   alarm_description   = "EC2 CPU usage over 5%"
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
-  dimensions          = { InstanceId = var.ec2_id }
+  dimensions          = { 
+    InstanceId = var.ec2_id 
+  }
   period              = 60
   statistic           = "Average"
   threshold           = 5
@@ -30,7 +34,9 @@ resource "aws_cloudwatch_metric_alarm" "ec2_cpu_alarm" {
   comparison_operator = "GreaterThanThreshold"
   treat_missing_data  = "notBreaching"
 
-  alarm_actions = [aws_sns_topic.alarm_topic.arn]
+  alarm_actions = [
+    aws_sns_topic.alarm_topic.arn
+  ]
 }
 
 # アラーム2: ALB 5XX エラー
@@ -39,7 +45,9 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_alarm" {
   alarm_description   = "ALB 5XX Errors"
   metric_name         = "HTTPCode_ELB_5XX_Count"
   namespace           = "AWS/ApplicationELB"
-  dimensions          = { LoadBalancer = var.alb_arn_suffix }
+  dimensions          = { 
+    LoadBalancer = var.alb_arn_suffix 
+  }
   period              = 300
   statistic           = "Sum"
   threshold           = 10
@@ -48,7 +56,9 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_alarm" {
   comparison_operator = "GreaterThanThreshold"
   treat_missing_data  = "notBreaching"
 
-  alarm_actions = [aws_sns_topic.alarm_topic.arn]
+  alarm_actions = [
+    aws_sns_topic.alarm_topic.arn
+  ]
 }
 
 # アラーム3: WAF 不正アクセス検知
@@ -70,5 +80,7 @@ resource "aws_cloudwatch_metric_alarm" "waf_blocked_alarm" {
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
 
-  alarm_actions = [aws_sns_topic.alarm_topic.arn]
+  alarm_actions = [
+    aws_sns_topic.alarm_topic.arn
+  ]
 }

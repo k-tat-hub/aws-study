@@ -11,7 +11,9 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = { Name = "lesson33-vpc" }
+  tags = { 
+    Name = "lesson33-vpc" 
+  }
 }
 
 # ==========================================
@@ -24,7 +26,9 @@ resource "aws_subnet" "public_a" {
   availability_zone       = "ap-northeast-1a"
   map_public_ip_on_launch = true
 
-  tags = { Name = "lesson33-subnet-public-a" }
+  tags = { 
+    Name = "lesson33-subnet-public-a" 
+  }
 }
 
 resource "aws_subnet" "private_a" {
@@ -32,7 +36,9 @@ resource "aws_subnet" "private_a" {
   cidr_block        = var.subnet_private_a_cidr
   availability_zone = "ap-northeast-1a"
 
-  tags = { Name = "lesson33-subnet-private-a" }
+  tags = { 
+    Name = "lesson33-subnet-private-a" 
+  }
 }
 
 # 1c
@@ -42,7 +48,9 @@ resource "aws_subnet" "public_c" {
   availability_zone       = "ap-northeast-1c"
   map_public_ip_on_launch = true
 
-  tags = { Name = "lesson33-subnet-public-c" }
+  tags = { 
+    Name = "lesson33-subnet-public-c" 
+  }
 }
 
 resource "aws_subnet" "private_c" {
@@ -50,7 +58,9 @@ resource "aws_subnet" "private_c" {
   cidr_block        = var.subnet_private_c_cidr
   availability_zone = "ap-northeast-1c"
 
-  tags = { Name = "lesson33-subnet-private-c" }
+  tags = { 
+    Name = "lesson33-subnet-private-c" 
+  }
 }
 
 # ==========================================
@@ -59,7 +69,9 @@ resource "aws_subnet" "private_c" {
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 
-  tags = { Name = "lesson33-igw" }
+  tags = { 
+    Name = "lesson33-igw" 
+  }
 }
 
 # ==========================================
@@ -68,7 +80,9 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
-  tags = { Name = "lesson33-rtb-public" }
+  tags = { 
+    Name = "lesson33-rtb-public" 
+  }
 }
 
 # 0.0.0.0/0へのルートを追加
@@ -98,14 +112,18 @@ resource "aws_route_table_association" "public_c" {
 resource "aws_route_table" "private_a" {
   vpc_id = aws_vpc.main.id
 
-  tags = { Name = "lesson33-rtb-private-a" }
+  tags = { 
+    Name = "lesson33-rtb-private-a" 
+  }
 }
 
 # 1c
 resource "aws_route_table" "private_c" {
   vpc_id = aws_vpc.main.id
 
-  tags = { Name = "lesson33-rtb-private-c" }
+  tags = { 
+    Name = "lesson33-rtb-private-c" 
+  }
 }
 
 # プライベートサブネットaへの紐付け
@@ -133,7 +151,9 @@ resource "aws_vpc_endpoint" "s3" {
     aws_route_table.private_c.id
   ]
 
-  tags = { Name = "lesson33-vpce-s3" }
+  tags = { 
+    Name = "lesson33-vpce-s3" 
+  }
 }
 
 # ==========================================
@@ -142,7 +162,7 @@ resource "aws_vpc_endpoint" "s3" {
 # ALBのセキュリティグループ
 resource "aws_security_group" "alb_sg" {
   name        = "lesson33-alb-sg"
-  description = "Allow connection from my ALB"
+  description = "Allow connection for my ALB"
   vpc_id      = aws_vpc.main.id
 
   # インバウンド
@@ -150,7 +170,9 @@ resource "aws_security_group" "alb_sg" {
     protocol    = "tcp"
     from_port   = 80
     to_port     = 80
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
   }
 
   # アウトバウンド
@@ -158,10 +180,14 @@ resource "aws_security_group" "alb_sg" {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
   }
 
-  tags = { Name = "lesson33-alb-sg" }
+  tags = { 
+    Name = "lesson33-alb-sg" 
+  }
 }
 
 # ALBの作成
@@ -169,10 +195,19 @@ resource "aws_lb" "alb" {
   name               = "lesson33-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = [aws_subnet.public_a.id, aws_subnet.public_c.id]
 
-  tags = { Name = "lesson33-alb" }
+  security_groups    = [
+    aws_security_group.alb_sg.id
+  ]
+
+  subnets            = [
+    aws_subnet.public_a.id, 
+    aws_subnet.public_c.id
+  ]
+
+  tags = { 
+    Name = "lesson33-alb" 
+  }
 }
 
 # ターゲットグループの作成
@@ -194,7 +229,9 @@ resource "aws_lb_target_group" "tg" {
     matcher             = "200,300,301"
   }
 
-  tags = { Name = "lesson33-tg" }
+  tags = { 
+    Name = "lesson33-tg" 
+  }
 }
 
 # ターゲットグループのアタッチ

@@ -11,7 +11,10 @@ resource "aws_security_group" "ec2" {
     protocol    = "tcp"
     from_port   = 22
     to_port     = 22
-    cidr_blocks = ["${var.MyIP}/32"]
+
+    cidr_blocks = [
+      "${var.MyIP}/32"
+    ]
   }
 
   # HTTP (80) の許可
@@ -19,18 +22,26 @@ resource "aws_security_group" "ec2" {
     protocol        = "tcp"
     from_port       = 80
     to_port         = 80
-    security_groups = [var.alb_sg_id]
+
+    security_groups = [
+      var.alb_sg_id
+    ]
   }
 
-  # アウトバウンド（外への通信）を全解放
+  # アウトバウンド
   egress {
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
+
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
   }
 
-  tags = { Name = "lesson33-ec2-sg" }
+  tags = { 
+    Name = "lesson33-ec2-sg" 
+  }
 }
 
 # ==========================================
@@ -46,5 +57,7 @@ resource "aws_instance" "ec2" {
   ]
   key_name = var.ec2_keypair
 
-  tags = { Name = "lesson33-ec2" }
+  tags = { 
+    Name = "lesson33-ec2" 
+  }
 }
