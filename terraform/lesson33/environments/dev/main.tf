@@ -20,8 +20,8 @@ module "compute" {
   alb_sg_id          = module.network.alb_sg_id
 }
 
-module "storage" {
-  source = "../../modules/storage"
+module "database" {
+  source = "../../modules/database"
 
   vpc_id              = module.network.vpc_id
   subnet_private_a_id = module.network.subnet_private_a_id

@@ -9,7 +9,7 @@ output "EC2PublicIP" {
 }
 
 output "RDSEndpoint" {
-  value       = module.storage.rds_endpoint
+  value       = module.database.rds_endpoint
   description = "Endpoint of RDS"
 }
 
