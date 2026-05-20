@@ -30,6 +30,8 @@ module "database" {
   db_engine_version   = var.db_engine_version
   db_instance_class   = var.db_instance_class
   db_password         = var.db_password
+  db_multi_az           = false
+  db_availability_zone  = "ap-northeast-1a"
 }
 
 module "security" {

@@ -65,14 +65,13 @@ resource "aws_db_instance" "rds" {
   storage_type          = "gp2"
   storage_encrypted     = true
 
-  availability_zone = "ap-northeast-1a"
-
   db_subnet_group_name = aws_db_subnet_group.rds.name
   vpc_security_group_ids = [
     aws_security_group.rds.id
   ]
 
-  multi_az                = false
+  multi_az                = var.db_multi_az
+  availability_zone       = var.db_multi_az ? null : var.db_availability_zone
   publicly_accessible     = false
   skip_final_snapshot     = true
   backup_retention_period = 1
