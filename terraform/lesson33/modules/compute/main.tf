@@ -3,7 +3,7 @@
 # ==========================================
 resource "aws_security_group" "ec2" {
   name        = "lesson33-ec2-sg"
-  description = "Allow SSH and HTTP access"
+  description = "Allow connection for SSH and ALB"
   vpc_id      = var.vpc_id
 
   # SSH (22) の許可

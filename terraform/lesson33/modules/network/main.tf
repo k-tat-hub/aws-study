@@ -162,7 +162,7 @@ resource "aws_vpc_endpoint" "s3" {
 # ALBのセキュリティグループ
 resource "aws_security_group" "alb" {
   name        = "lesson33-alb-sg"
-  description = "Allow connection for my ALB"
+  description = "Allow connection for public access"
   vpc_id      = aws_vpc.main.id
 
   # インバウンド

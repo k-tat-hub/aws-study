@@ -3,7 +3,7 @@
 # ==========================================
 resource "aws_security_group" "rds" {
   name        = "lesson33-rds-sg"
-  description = "Allow connection from my EC2"
+  description = "Allow connection for my EC2"
   vpc_id      = var.vpc_id
 
   # インバウンド
