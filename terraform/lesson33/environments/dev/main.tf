@@ -23,15 +23,15 @@ module "compute" {
 module "database" {
   source = "../../modules/database"
 
-  vpc_id              = module.network.vpc_id
-  subnet_private_a_id = module.network.subnet_private_a_id
-  subnet_private_c_id = module.network.subnet_private_c_id
-  ec2_sg_id           = module.compute.ec2_sg_id
-  db_engine_version   = var.db_engine_version
-  db_instance_class   = var.db_instance_class
-  db_password         = var.db_password
-  db_multi_az           = false
-  db_availability_zone  = "ap-northeast-1a"
+  vpc_id               = module.network.vpc_id
+  subnet_private_a_id  = module.network.subnet_private_a_id
+  subnet_private_c_id  = module.network.subnet_private_c_id
+  ec2_sg_id            = module.compute.ec2_sg_id
+  db_engine_version    = var.db_engine_version
+  db_instance_class    = var.db_instance_class
+  db_password          = var.db_password
+  db_multi_az          = false
+  db_availability_zone = "ap-northeast-1a"
 }
 
 module "security" {
