@@ -1,26 +1,7 @@
-variable "vpc_id" {
+variable "db_availability_zone" {
   type        = string
-  description = "VPC ID for the RDS security groups"
-}
-
-variable "ec2_sg_id" {
-  type        = string
-  description = "Security group ID of the EC2 for the RDS ingress source"
-}
-
-variable "subnet_private_a_id" {
-  type        = string
-  description = "Private subnet A ID for the RDS subnet group"
-}
-
-variable "subnet_private_c_id" {
-  type        = string
-  description = "Private subnet C ID for the RDS subnet group"
-}
-
-variable "db_password" {
-  type        = string
-  description = "Password for the RDS instance"
+  default     = null
+  description = "Availability zone for the RDS instance"
 }
 
 variable "db_engine_version" {
@@ -39,8 +20,27 @@ variable "db_multi_az" {
   description = "Enable multi-AZ for the RDS instance"
 }
 
-variable "db_availability_zone" {
+variable "db_password" {
   type        = string
-  default     = null
-  description = "Availability zone for the RDS instance"
+  description = "Password for the RDS instance"
+}
+
+variable "ec2_sg_id" {
+  type        = string
+  description = "Security group ID of the EC2 for the RDS ingress source"
+}
+
+variable "subnet_private_a_id" {
+  type        = string
+  description = "Private subnet A ID for the RDS subnet group"
+}
+
+variable "subnet_private_c_id" {
+  type        = string
+  description = "Private subnet C ID for the RDS subnet group"
+}
+
+variable "vpc_id" {
+  type        = string
+  description = "VPC ID for the RDS security groups"
 }

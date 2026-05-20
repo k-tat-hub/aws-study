@@ -1,16 +1,6 @@
-variable "vpc_cidr" {
+variable "ec2_id" {
   type        = string
-  description = "CIDR block for the VPC"
-}
-
-variable "subnet_public_a_cidr" {
-  type        = string
-  description = "CIDR block for the public subnet A"
-}
-
-variable "subnet_public_c_cidr" {
-  type        = string
-  description = "CIDR block for the public subnet C"
+  description = "Instance ID of EC2 for the ALB target group"
 }
 
 variable "subnet_private_a_cidr" {
@@ -23,7 +13,17 @@ variable "subnet_private_c_cidr" {
   description = "CIDR block for the private subnet C"
 }
 
-variable "ec2_id" {
+variable "subnet_public_a_cidr" {
   type        = string
-  description = "Instance ID of EC2 for the ALB target group"
+  description = "CIDR block for the public subnet A"
+}
+
+variable "subnet_public_c_cidr" {
+  type        = string
+  description = "CIDR block for the public subnet C"
+}
+
+variable "vpc_cidr" {
+  type        = string
+  description = "CIDR block for the VPC"
 }
