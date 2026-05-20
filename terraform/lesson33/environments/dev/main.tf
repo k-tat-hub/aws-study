@@ -16,7 +16,7 @@ module "compute" {
   subnet_public_a_id = module.network.subnet_public_a_id
   ec2_ami            = var.ec2_ami
   ec2_keypair        = var.ec2_keypair
-  MyIP               = var.MyIP
+  my_ip              = var.my_ip
   alb_sg_id          = module.network.alb_sg_id
 }
 

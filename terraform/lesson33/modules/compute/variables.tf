@@ -3,7 +3,7 @@ variable "vpc_id" {
   description = "VPC ID for the EC2 security groups"
 }
 
-variable "MyIP" { 
+variable "my_ip" { 
   type        = string
   description = "My Global IP Address for SSH"
 }

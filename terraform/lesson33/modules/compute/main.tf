@@ -13,7 +13,7 @@ resource "aws_security_group" "ec2" {
     to_port     = 22
 
     cidr_blocks = [
-      "${var.MyIP}/32"
+      "${var.my_ip}/32"
     ]
   }
 

@@ -1,4 +1,4 @@
-variable "MyIP" {
+variable "my_ip" {
   type        = string
   description = "My Global IP Address for SSH"
 }
