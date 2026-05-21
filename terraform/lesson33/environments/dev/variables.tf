@@ -3,16 +3,24 @@ variable "alarm_email" {
   description = "Email address for the alarm notifications"
 }
 
+variable "db_availability_zone" {
+  type        = string
+  description = "Availability zone for the RDS instance"
+}
+
 variable "db_engine_version" {
   type        = string
-  default     = "8.0.46"
   description = "Engine version for the RDS instance"
 }
 
 variable "db_instance_class" {
   type        = string
-  default     = "db.t3.micro"
   description = "Instance class for the RDS instance"
+}
+
+variable "db_multi_az" {
+  type        = bool
+  description = "Enable multi-AZ for the RDS instance"
 }
 
 variable "db_password" {
@@ -22,13 +30,11 @@ variable "db_password" {
 
 variable "ec2_ami" {
   type        = string
-  default     = "ami-0e668174d57c64015"
   description = "AMI ID for the EC2 instance"
 }
 
 variable "ec2_instance_type" {
   type        = string
-  default     = "t3.micro"
   description = "Instance type for the EC2 instance"
 }
 
@@ -40,4 +46,29 @@ variable "ec2_keypair" {
 variable "my_ip" {
   type        = string
   description = "My Global IP Address for SSH"
+}
+
+variable "subnet_private_a_cidr" {
+  type        = string
+  description = "CIDR block for the private subnet A"
+}
+
+variable "subnet_private_c_cidr" {
+  type        = string
+  description = "CIDR block for the private subnet C"
+}
+
+variable "subnet_public_a_cidr" {
+  type        = string
+  description = "CIDR block for the public subnet A"
+}
+
+variable "subnet_public_c_cidr" {
+  type        = string
+  description = "CIDR block for the public subnet C"
+}
+
+variable "vpc_cidr" {
+  type        = string
+  description = "CIDR block for the VPC"
 }

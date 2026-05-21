@@ -5,13 +5,11 @@ variable "alb_sg_id" {
 
 variable "ec2_ami" {
   type        = string
-  default     = "ami-0e668174d57c64015"
   description = "AMI ID for the EC2 instance"
 }
 
 variable "ec2_instance_type" {
   type        = string
-  default     = "t3.micro"
   description = "Instance type for the EC2 instance"
 }
 

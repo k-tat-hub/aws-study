@@ -1,6 +1,5 @@
 variable "db_availability_zone" {
   type        = string
-  default     = null
   description = "Availability zone for the RDS instance"
 }
 
@@ -16,7 +15,6 @@ variable "db_instance_class" {
 
 variable "db_multi_az" {
   type        = bool
-  default     = false
   description = "Enable multi-AZ for the RDS instance"
 }
 
