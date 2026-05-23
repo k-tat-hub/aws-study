@@ -7,7 +7,7 @@ variables {
   subnet_private_a_id  = "subnet-12345678"
   subnet_private_c_id  = "subnet-87654321"
   ec2_sg_id            = "sg-ec2"
-  db_password          = "password123"
+  db_password          = "test-password"
   db_engine_version    = "8.0"
   db_instance_class    = "db.t3.micro"
   db_multi_az          = false

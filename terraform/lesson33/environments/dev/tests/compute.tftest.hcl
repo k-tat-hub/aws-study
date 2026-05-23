@@ -7,7 +7,7 @@ variables {
   subnet_public_a_id = "subnet-12345678"
   ec2_keypair        = "test-keypair"
   ec2_ami            = "ami-12345678"
-  ec2_instance_type  = "t3.small"
+  ec2_instance_type  = "t3.micro"
   my_ip              = "1.2.3.4"
   alb_sg_id          = "sg-12345678"
 }
