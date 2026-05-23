@@ -61,8 +61,8 @@ run "subnet_cidr_test" {
 run "alb_security_group_test" {
   command = plan
 
-  module { 
-    source = "../../modules/network" 
+  module {
+    source = "../../modules/network"
   }
 
   assert {

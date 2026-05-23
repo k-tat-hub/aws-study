@@ -66,13 +66,13 @@ run "ec2_security_group_test" {
 
   # SSH全開放禁止
   assert {
-  condition = alltrue([
-    for rule in output.ec2_sg_ingress_rules :
-    !contains(coalesce(rule.cidr_blocks, []), "0.0.0.0/0")
-    if rule.from_port == 22 && rule.to_port == 22
-  ])
+    condition = alltrue([
+      for rule in output.ec2_sg_ingress_rules :
+      !contains(coalesce(rule.cidr_blocks, []), "0.0.0.0/0")
+      if rule.from_port == 22 && rule.to_port == 22
+    ])
 
-  error_message = "Security risk: SSH access must not be open to the world"
+    error_message = "Security risk: SSH access must not be open to the world"
   }
 
   # アウトバウンド
