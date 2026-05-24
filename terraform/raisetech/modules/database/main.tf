@@ -2,7 +2,7 @@
 # RDSのセキュリティグループ
 # ==========================================
 resource "aws_security_group" "rds" {
-  name        = "lesson33-rds-sg"
+  name        = "raisetech-rds-sg"
   description = "Allow connection for my EC2"
   vpc_id      = var.vpc_id
 
@@ -27,7 +27,7 @@ resource "aws_security_group" "rds" {
   }
 
   tags = {
-    Name = "lesson33-rds-sg"
+    Name = "raisetech-rds-sg"
   }
 }
 
@@ -35,7 +35,7 @@ resource "aws_security_group" "rds" {
 # DBサブネットグループの作成
 # ==========================================
 resource "aws_db_subnet_group" "rds" {
-  name        = "lesson33-rds-subnet-group"
+  name        = "raisetech-rds-subnet-group"
   description = "Subnet group for RDS"
 
   subnet_ids = [
@@ -44,7 +44,7 @@ resource "aws_db_subnet_group" "rds" {
   ]
 
   tags = {
-    Name = "lesson33-rds-subnet-group"
+    Name = "raisetech-rds-subnet-group"
   }
 }
 
@@ -52,11 +52,11 @@ resource "aws_db_subnet_group" "rds" {
 # RDSインスタンスの作成
 # ==========================================
 resource "aws_db_instance" "rds" {
-  identifier     = "lesson33-rds"
+  identifier     = "raisetech-rds"
   engine         = "mysql"
   engine_version = var.db_engine_version
   username       = "admin"
-  db_name        = "lesson33"
+  db_name        = "raisetech"
   password       = var.db_password
 
   instance_class        = var.db_instance_class
@@ -87,7 +87,7 @@ resource "aws_db_instance" "rds" {
   ]
 
   tags = {
-    Name = "lesson33-rds"
+    Name = "raisetech-rds"
   }
 }
 
@@ -95,7 +95,7 @@ resource "aws_db_instance" "rds" {
 # RDSモニタリング用IAMロール
 # ==========================================
 resource "aws_iam_role" "rds_monitoring" {
-  name = "lesson33-rds-monitoring-role"
+  name = "raisetech-rds-monitoring-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -111,7 +111,7 @@ resource "aws_iam_role" "rds_monitoring" {
   })
 
   tags = {
-    Name = "lesson33-rds-monitoring-role"
+    Name = "raisetech-rds-monitoring-role"
   }
 }
 

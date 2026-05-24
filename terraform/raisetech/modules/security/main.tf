@@ -2,7 +2,7 @@
 # WAFの作成
 # ==========================================
 resource "aws_wafv2_web_acl" "main" {
-  name  = "lesson33-web-acl"
+  name  = "raisetech-web-acl"
   scope = "REGIONAL"
 
   default_action {
@@ -58,11 +58,11 @@ resource "aws_wafv2_web_acl" "main" {
   visibility_config {
     sampled_requests_enabled   = true
     cloudwatch_metrics_enabled = true
-    metric_name                = "lesson33-web-acl-metrics"
+    metric_name                = "raisetech-web-acl-metrics"
   }
 
   tags = {
-    Name = "lesson33-web-acl"
+    Name = "raisetech-web-acl"
   }
 }
 
@@ -76,10 +76,10 @@ resource "aws_wafv2_web_acl_association" "alb" {
 # CloudWatch Logsとの連携
 # ==========================================
 resource "aws_cloudwatch_log_group" "waf" {
-  name              = "aws-waf-logs-lesson33"
+  name              = "aws-waf-logs-raisetech"
   retention_in_days = 7
   tags = {
-    Name = "aws-waf-logs-lesson33"
+    Name = "aws-waf-logs-raisetech"
   }
 }
 

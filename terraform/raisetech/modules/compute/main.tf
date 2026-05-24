@@ -2,7 +2,7 @@
 # EC2のセキュリティグループ
 # ==========================================
 resource "aws_security_group" "ec2" {
-  name        = "lesson33-ec2-sg"
+  name        = "raisetech-ec2-sg"
   description = "Allow connection for SSH and ALB"
   vpc_id      = var.vpc_id
 
@@ -40,7 +40,7 @@ resource "aws_security_group" "ec2" {
   }
 
   tags = {
-    Name = "lesson33-ec2-sg"
+    Name = "raisetech-ec2-sg"
   }
 }
 
@@ -58,6 +58,6 @@ resource "aws_instance" "ec2" {
   key_name = var.ec2_keypair
 
   tags = {
-    Name = "lesson33-ec2"
+    Name = "raisetech-ec2"
   }
 }

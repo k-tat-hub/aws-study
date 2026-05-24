@@ -2,9 +2,9 @@
 # SNSの設定
 # ==========================================
 resource "aws_sns_topic" "alarm" {
-  name = "lesson33-alarm-topic"
+  name = "raisetech-alarm-topic"
   tags = {
-    Name = "lesson33-alarm-topic"
+    Name = "raisetech-alarm-topic"
   }
 }
 
@@ -19,7 +19,7 @@ resource "aws_sns_topic_subscription" "email" {
 # ==========================================
 # アラーム1: EC2のCPU使用率
 resource "aws_cloudwatch_metric_alarm" "ec2_cpu" {
-  alarm_name        = "lesson33-ec2-cpu-over"
+  alarm_name        = "raisetech-ec2-cpu-over"
   alarm_description = "EC2 CPU usage over 5%"
   metric_name       = "CPUUtilization"
   namespace         = "AWS/EC2"
@@ -41,7 +41,7 @@ resource "aws_cloudwatch_metric_alarm" "ec2_cpu" {
 
 # アラーム2: ALB 5XX エラー
 resource "aws_cloudwatch_metric_alarm" "alb_5xx" {
-  alarm_name        = "lesson33-alb-5xx-errors"
+  alarm_name        = "raisetech-alb-5xx-errors"
   alarm_description = "ALB 5XX Errors"
   metric_name       = "HTTPCode_ELB_5XX_Count"
   namespace         = "AWS/ApplicationELB"
@@ -63,7 +63,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx" {
 
 # アラーム3: WAF 不正アクセス検知
 resource "aws_cloudwatch_metric_alarm" "waf_blocked" {
-  alarm_name        = "lesson33-waf-blocked-requests"
+  alarm_name        = "raisetech-waf-blocked-requests"
   alarm_description = "WAF Blocked requests detected"
   metric_name       = "BlockedRequests"
   namespace         = "AWS/WAFV2"

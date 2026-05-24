@@ -5,5 +5,5 @@
 
 `terraform init` を実行する前に、あらかじめAWSマネージメントコンソール、またはAWS CLIにて、以下の名前でS3バケットを事前に手動作成しておく必要があります。
 
-- **バケット名**: `lesson33-state-tat`
+- **バケット名**: `raisetech-state-tat`
 - **リージョン**: `ap-northeast-1`

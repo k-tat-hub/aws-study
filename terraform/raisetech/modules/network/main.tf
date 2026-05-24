@@ -12,7 +12,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
 
   tags = {
-    Name = "lesson33-vpc"
+    Name = "raisetech-vpc"
   }
 }
 
@@ -27,7 +27,7 @@ resource "aws_subnet" "public_a" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "lesson33-subnet-public-a"
+    Name = "raisetech-subnet-public-a"
   }
 }
 
@@ -37,7 +37,7 @@ resource "aws_subnet" "private_a" {
   availability_zone = "ap-northeast-1a"
 
   tags = {
-    Name = "lesson33-subnet-private-a"
+    Name = "raisetech-subnet-private-a"
   }
 }
 
@@ -49,7 +49,7 @@ resource "aws_subnet" "public_c" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "lesson33-subnet-public-c"
+    Name = "raisetech-subnet-public-c"
   }
 }
 
@@ -59,7 +59,7 @@ resource "aws_subnet" "private_c" {
   availability_zone = "ap-northeast-1c"
 
   tags = {
-    Name = "lesson33-subnet-private-c"
+    Name = "raisetech-subnet-private-c"
   }
 }
 
@@ -70,7 +70,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "lesson33-igw"
+    Name = "raisetech-igw"
   }
 }
 
@@ -81,7 +81,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "lesson33-rtb-public"
+    Name = "raisetech-rtb-public"
   }
 }
 
@@ -113,7 +113,7 @@ resource "aws_route_table" "private_a" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "lesson33-rtb-private-a"
+    Name = "raisetech-rtb-private-a"
   }
 }
 
@@ -122,7 +122,7 @@ resource "aws_route_table" "private_c" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "lesson33-rtb-private-c"
+    Name = "raisetech-rtb-private-c"
   }
 }
 
@@ -152,7 +152,7 @@ resource "aws_vpc_endpoint" "s3" {
   ]
 
   tags = {
-    Name = "lesson33-vpce-s3"
+    Name = "raisetech-vpce-s3"
   }
 }
 
@@ -161,7 +161,7 @@ resource "aws_vpc_endpoint" "s3" {
 # ==========================================
 # ALBのセキュリティグループ
 resource "aws_security_group" "alb" {
-  name        = "lesson33-alb-sg"
+  name        = "raisetech-alb-sg"
   description = "Allow connection for public access"
   vpc_id      = aws_vpc.main.id
 
@@ -186,13 +186,13 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Name = "lesson33-alb-sg"
+    Name = "raisetech-alb-sg"
   }
 }
 
 # ALBの作成
 resource "aws_lb" "alb" {
-  name               = "lesson33-alb"
+  name               = "raisetech-alb"
   internal           = false
   load_balancer_type = "application"
 
@@ -206,13 +206,13 @@ resource "aws_lb" "alb" {
   ]
 
   tags = {
-    Name = "lesson33-alb"
+    Name = "raisetech-alb"
   }
 }
 
 # ターゲットグループの作成
 resource "aws_lb_target_group" "ec2" {
-  name        = "lesson33-tg"
+  name        = "raisetech-tg"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
@@ -230,7 +230,7 @@ resource "aws_lb_target_group" "ec2" {
   }
 
   tags = {
-    Name = "lesson33-tg"
+    Name = "raisetech-tg"
   }
 }
 
