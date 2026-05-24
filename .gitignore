@@ -5,6 +5,6 @@
 .terraform.lock.info
 *.tfstate.lock.info
 *.tfplan
-*.tfvars
 *.tfvars.json
 *.log
+terraform/practices
