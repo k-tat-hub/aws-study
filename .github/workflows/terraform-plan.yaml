@@ -1,4 +1,4 @@
-name: Terraform CI/CD
+name: Terraform Plan
 
 on:
   push:
@@ -30,4 +30,5 @@ jobs:
       - run: terraform fmt -check -recursive
       - run: terraform validate
       - run: terraform test
-      - run: terraform plan
+      - run: terraform plan -out=tfplan
+      - run: terraform show tfplan
