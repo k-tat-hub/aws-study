@@ -1,9 +1,7 @@
 name: Terraform Apply
 
 on:
-  push:
-    branches:
-      - lesson41
+  workflow_dispatch:
 
 jobs:
   terraform-apply:
