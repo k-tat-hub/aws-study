@@ -21,6 +21,18 @@ module "compute" {
   alb_sg_id          = module.network.alb_sg_id
 }
 
+module "compute_2" {
+  source = "../../modules/compute"
+
+  vpc_id             = module.network.vpc_id
+  subnet_public_a_id = module.network.subnet_public_a_id
+  ec2_keypair        = var.ec2_keypair
+  ec2_ami            = var.ec2_ami
+  ec2_instance_type  = var.ec2_instance_type
+  my_ip              = var.my_ip
+  alb_sg_id          = module.network.alb_sg_id
+}
+
 module "database" {
   source = "../../modules/database"
 
