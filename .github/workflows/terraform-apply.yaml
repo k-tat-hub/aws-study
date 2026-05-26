@@ -2,8 +2,13 @@ name: Terraform Apply
 
 on:
   push:
-    branches:
-      - lesson41
+    branches: [main]
+    paths: 
+      - 'terraform/raisetech/modules/**/*.tf'
+      - 'terraform/raisetech/environments/**/*.tf'
+      - 'terraform/raisetech/environments/**/*.tfvars'
+      - 'terraform/raisetech/environments/**/*.tftest.hcl'
+      - '.github/workflows/*.yaml'
 
 jobs:
   terraform-apply:
@@ -39,4 +44,5 @@ jobs:
           aws-region: ap-northeast-1
       
       - run: terraform init
+      - run: terraform plan
       - run: terraform apply -auto-approve

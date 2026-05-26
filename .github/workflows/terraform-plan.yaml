@@ -1,9 +1,13 @@
 name: Terraform Plan
 
 on:
-  push:
-    branches:
-      - lesson41
+  pull_request:
+    paths:
+      - 'terraform/raisetech/modules/**/*.tf'
+      - 'terraform/raisetech/environments/**/*.tf'
+      - 'terraform/raisetech/environments/**/*.tfvars'
+      - 'terraform/raisetech/environments/**/*.tftest.hcl'
+      - '.github/workflows/*.yaml'
 
 jobs:
   terraform-plan:
@@ -39,6 +43,4 @@ jobs:
       - run: terraform fmt -check -recursive
       - run: terraform validate
       - run: terraform test
-      - run: terraform plan -out=tfplan
-      - run: terraform show tfplan
-  
+      - run: terraform plan
