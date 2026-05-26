@@ -2,7 +2,7 @@
 # EC2のセキュリティグループ
 # ==========================================
 resource "aws_security_group" "ec2" {
-  name        = "raisetech-ec2-sg"
+  name = "raisetech-ec2-sg"
   description = "Allow connection for SSH and ALB"
   vpc_id      = var.vpc_id
 
