@@ -1,4 +1,4 @@
-## 課題33：TerraformによるAWS環境構築
+## lesson31：TerraformによるAWS環境構築
 
 ### 事前準備（Backend S3バケットの作成）
 本環境では、Terraformのstateファイルの管理にS3バケットを使用しています。

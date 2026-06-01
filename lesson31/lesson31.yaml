@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09" # テンプレのフォーマットのバージョンを指定する、決まり文句
-Description: "aws study lesson27" # テンプレの目的や内容について記述する、AWSTemplateFormatVersionの直後に書く必要あり
+Description: "aws study lesson31" # テンプレの目的や内容について記述する、AWSTemplateFormatVersionの直後に書く必要あり
 
 
 # ==========================================
