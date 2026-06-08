@@ -96,6 +96,10 @@ GitHub Actionsを活用してTerraformのコード管理と自動デプロイを
 │           ├── output.tf
 │           └── variables.tf
 │ 
+├── diagrams/architecture.drawio.png    # AWSインフラ構成図
+├── lesson21/lesson21.txt               # 学習記録: GitHub練習
+├── lesson27/lesson27.ymal              # 学習記録: CloudFormationによるAWSインフラ構築
+├── lesson31/lesson31.ymal              # 学習記録: CloudFormationによるAWSインフラ構築
 ├── .gitignore
 └── README.md
 ```
