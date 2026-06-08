@@ -3,7 +3,9 @@
 <br>
 
 ## 概要
-**Terraform** によるAWSインフラ構築を**GitHub Actions** によるCI/CDパイプラインから実行することで、「特定のファイルを任意のブランチからpushし、pull request作成する際に自動でテストを行い、mainにマージすることでAWSインフラ環境が出来上がる」状態までを自動実行する基本設計書となります。
+本プロジェクトでは、Terraformを用いたAWSインフラ構築をGitHub Actionsで自動化し、安全かつ効率的なIaCを実現しています。
+
+Pull Requestを起点としたテスト・検証を自動実行し、Mainブランチへのマージを経て環境を構築するCI/CDパイプラインを設計しました。手動承認プロセスの導入により、本番環境への変更における安全性を確保しつつ、継続的なデプロイを可能にする設計としています。
 
 <br>
 
@@ -101,7 +103,7 @@ GitHub Actionsを活用してTerraformのコード管理と自動デプロイを
 <br>
 
 ## インフラ構成図
-
+![インフラ構成図](diagrams/architecture.drawio.png)
 
 <br>
 
