@@ -1,4 +1,4 @@
-# TerraformとGitHub ActionsによるCI/CDでのAWS環境構築
+# Terraform × GitHub Actions によるAWSインフラ自動構築
 
 <br>
 
