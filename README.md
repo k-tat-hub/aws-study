@@ -1,4 +1,4 @@
-# Terraform × GitHub Actions によるAWSインフラ自動構築
+# Terraform と GitHub Actions によるAWSインフラ自動構築
 
 <br>
 
